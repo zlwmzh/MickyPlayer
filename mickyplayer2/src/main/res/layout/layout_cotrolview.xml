@@ -4,16 +4,10 @@
     android:layout_height="match_parent"
     >
  <TextView
-     android:layout_width="match_parent"
-     android:layout_height="wrap_content"
-     android:lines="2"
-     android:text="男子失明走在街上被女友看见，女友瞬间明白男友为什么会那样对他"
-     android:textSize="18sp"
-     android:textColor="@android:color/white"
-     android:background="@drawable/shape_title_bg"
+     style="@style/Control_Title_Style"
      android:id="@+id/controlview_title"
-     android:layout_gravity="top"/>
-    <ImageView
+     />
+    <android.support.v7.widget.AppCompatImageButton
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_gravity="center"
@@ -55,7 +49,7 @@
             android:textColor="@android:color/white"
             android:id="@+id/play_total_time"/>
         <!--放大缩小-->
-        <ImageView
+        <android.support.v7.widget.AppCompatImageButton
             android:layout_width="15dp"
             android:layout_height="15dp"
             android:src="@drawable/full_small_bg"
