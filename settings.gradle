@@ -1,1 +1,1 @@
-include ':app', ':mickyplayer2'
+include ':mickyplayer2', ':videomodule'

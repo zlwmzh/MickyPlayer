@@ -1,4 +1,4 @@
-package com.micky.www.mickyplayer;
+package com.micky.www.videomodule;
 
 import org.junit.Test;
 

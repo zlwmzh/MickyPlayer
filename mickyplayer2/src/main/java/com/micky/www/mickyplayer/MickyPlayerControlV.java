@@ -7,7 +7,10 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.AppCompatImageButton;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -15,6 +18,12 @@ import android.widget.TextView;
 
 import com.facebook.drawee.view.SimpleDraweeView;
 
+import java.util.concurrent.TimeUnit;
+
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
 import tv.danmaku.ijk.media.player.IMediaPlayer;
 
 /**
@@ -23,6 +32,11 @@ import tv.danmaku.ijk.media.player.IMediaPlayer;
  */
 
 public class MickyPlayerControlV extends ControlView implements View.OnClickListener,SeekBar.OnSeekBarChangeListener {
+
+    // 查询进度
+    protected Disposable mResearchProgress;
+    // 进度查询时间
+    protected long mSpeedRefreshUiTime = PlayerConfig.PROGRESS_REFRESH;
 
     public MickyPlayerControlV(@NonNull Context context) {
         this(context,null);
@@ -46,13 +60,13 @@ public class MickyPlayerControlV extends ControlView implements View.OnClickList
      // 信息图层标题
     protected TextView mCoverTitle;
      // 信息图层播放按钮
-    protected AppCompatImageButton mCoverBtnPlay;
+    protected ImageView mCoverBtnPlay;
      // 信息图层总时长
     protected TextView mCoverTotalTime;
      // 控制图层标题
     protected TextView mControlTitle;
      // 控制图层播放暂停按钮
-    protected AppCompatImageButton mControlBtnPlayOrPause;
+    protected ImageView mControlBtnPlayOrPause;
      // 控制图层已播放时长
     protected TextView mControlPlayTime;
      // 控制图层总时长
@@ -60,7 +74,7 @@ public class MickyPlayerControlV extends ControlView implements View.OnClickList
      // 控制图层拖动进度条
     protected SeekBar mControlSeekBar;
      // 控制图层全屏或退出全屏按钮
-    protected AppCompatImageButton mControlBtnFullorSmall;
+    protected ImageView mControlBtnFullorSmall;
     /**
      * 初始化操作
      * @param context  上下文环境
@@ -92,7 +106,7 @@ public class MickyPlayerControlV extends ControlView implements View.OnClickList
 
 
         // 首先添加的是信息图层
-        addCoverView();
+        changeTopView();
     }
 
     @Override
@@ -101,13 +115,23 @@ public class MickyPlayerControlV extends ControlView implements View.OnClickList
         if (id == R.id.cover_play)
         {
             // 信息层点击播放
-            PlayerHelper.start();
+            // 控制层播放暂停按钮
+            mControlBtnPlayOrPause.setSelected(!mControlBtnPlayOrPause.isSelected());
+            start();
             return;
         }
         if (id == R.id.btn_control)
         {
-            // 控制层点击播放或者暂停
-            
+            // 控制层播放暂停按钮
+            mControlBtnPlayOrPause.setSelected(!mControlBtnPlayOrPause.isSelected());
+            if (PlayerHelper.getPlayerPlayState() == PlayerConfig.PLAYER_STATE_PAUSE )
+            {
+                // 暂停到播放
+                start();
+                return;
+            }
+            // 暂停
+            pause();
             return;
         }
         if (id == R.id.control_full_small)
@@ -116,7 +140,20 @@ public class MickyPlayerControlV extends ControlView implements View.OnClickList
 
             return;
         }
+    }
 
+    /**
+     * 添加图层
+     */
+    protected void changeTopView()
+    {
+        if (PlayerHelper.getPlayerPlayState() == PlayerConfig.PLAYER_STATE_PLAYING ||
+                PlayerHelper.getPlayerPlayState() == PlayerConfig.PLAYER_STATE_PAUSE)
+        {
+            addControlView();
+            return;
+        }
+        addCoverView();
     }
 
     /**
@@ -132,6 +169,7 @@ public class MickyPlayerControlV extends ControlView implements View.OnClickList
         if (getChildCount() != 0) removeAllViews();
         // 添加view
         addView(mControlFrame);
+
     }
 
     /**
@@ -142,13 +180,29 @@ public class MickyPlayerControlV extends ControlView implements View.OnClickList
         // 判断信息层是否为空
         if (mCoverFrame == null) return;
         // 判断信息层是否有父view
-        if (mCoverFrame.getParent() == null) return;
+        if (mCoverFrame.getParent() != null) return;
         // 判断父布局是否有其他子类，如果有全部移除
         if (getChildCount() != 0) removeAllViews();
         // 添加view
         addView(mCoverFrame);
     }
 
+    /**
+     * 开始播放
+     */
+    protected void start()
+    {
+        PlayerHelper.start();
+        prgressListener();
+    }
+
+    /**
+     * 暂停播放
+     */
+    protected void pause()
+    {
+        PlayerHelper.pause();
+    }
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -162,8 +216,9 @@ public class MickyPlayerControlV extends ControlView implements View.OnClickList
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
-
+         PlayerHelper.seekTo(seekBar.getProgress());
     }
+
 
 
     @Override
@@ -175,16 +230,17 @@ public class MickyPlayerControlV extends ControlView implements View.OnClickList
     MickyPlayerListener listener = new MickyPlayerListener() {
         @Override
         public void onBufferingUpdate(IMediaPlayer iMediaPlayer, int i) {
-
+             mControlSeekBar.setSecondaryProgress(i);
         }
 
         @Override
         public void onCompletion(IMediaPlayer iMediaPlayer) {
-
+            changeTopView();
         }
 
         @Override
         public boolean onError(IMediaPlayer iMediaPlayer, int i, int i1) {
+            changeTopView();
             return false;
         }
 
@@ -195,12 +251,12 @@ public class MickyPlayerControlV extends ControlView implements View.OnClickList
 
         @Override
         public void onPrepared(IMediaPlayer iMediaPlayer) {
-
+           // addControlView();
         }
 
         @Override
         public void onSeekComplete(IMediaPlayer iMediaPlayer) {
-
+           changeTopView();
         }
 
         @Override
@@ -209,6 +265,56 @@ public class MickyPlayerControlV extends ControlView implements View.OnClickList
         }
     };
 
+    /**
+     * 查询进度
+     */
+    protected void prgressListener()
+    {
+        changeTopView();
+        mResearchProgress = Observable.interval(mSpeedRefreshUiTime, TimeUnit.MILLISECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<Long>() {
+                    @Override
+                    public void accept(Long aLong) throws Exception {
+
+                        if (PlayerHelper.getPlayerPlayState() == PlayerConfig.PLAYER_STATE_PLAYING)
+                        {
+                            // 如果是正在下载的话，回掉进度：
+                            long duration = PlayerHelper.getDuration();
+                            long currentPosition = PlayerHelper.getCurrentDuration();
+                           // int progress = (int) (currentPosition * 100 / (duration == 0 ? 1 : duration));
+                            mControlSeekBar.setProgress((int) currentPosition);
+                            mControlSeekBar.setMax((int) duration);
+                            mControlPlayTime.setText(MediaTimeUtils.stringForTime((int) currentPosition));
+                            mControlTotalTime.setText(MediaTimeUtils.stringForTime((int) duration));
+                        }else
+                        {
+                            // 其他情况关闭轮询
+                            if (mResearchProgress != null)
+                            {
+                                mResearchProgress.dispose();
+                            }
+                        }
+                    }
+                });
+    }
 
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (mControlFrame.getParent() != null)
+        {
+           removeView(mControlFrame);
+        }else
+        {
+            changeTopView();
+        }
+
+        return super.onTouchEvent(event);
+    }
+
+    public void  startFull()
+    {
+       // ViewGroup vp = getContext().findViewById(Window.ID_ANDROID_CONTENT);
+    }
 }

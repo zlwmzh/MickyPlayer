@@ -1,4 +1,4 @@
-package com.micky.www.mickyplayer;
+package com.micky.www.videomodule;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.micky.www.mickyplayer", appContext.getPackageName());
+        assertEquals("com.micky.www.videomodule", appContext.getPackageName());
     }
 }

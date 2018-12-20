@@ -11,6 +11,8 @@ import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 public class PlayerHelper {
     // ijkplayer提供，用于播放视频，需要给他传入一个surfaceView显示
     private static IMediaPlayer mMediaPlayer = null;
+    // 当前播放状态,默认初始状态
+    private static int mMediaPlayerState = PlayerConfig.PLAYER_STATE_INIT;
 
     private PlayerHelper() {
 
@@ -32,6 +34,7 @@ public class PlayerHelper {
     {
         if (mMediaPlayer != null)
         {
+            setPlayerPlayState(PlayerConfig.PLAYER_STATE_PLAYING);
             mMediaPlayer.start();
         }
     }
@@ -44,6 +47,7 @@ public class PlayerHelper {
     {
         if (mMediaPlayer != null)
         {
+            mMediaPlayerState = PlayerConfig.PLAYER_STATE_PAUSE;
             mMediaPlayer.pause();
         }
     }
@@ -56,6 +60,7 @@ public class PlayerHelper {
     {
         if (mMediaPlayer != null)
         {
+            mMediaPlayerState = PlayerConfig.PLAYER_STATE_STOP;
             mMediaPlayer.stop();
         }
     }
@@ -68,6 +73,7 @@ public class PlayerHelper {
     {
         if (mMediaPlayer != null)
         {
+            mMediaPlayerState = PlayerConfig.PLAYER_STATE_INIT;
             mMediaPlayer.reset();
             mMediaPlayer.release();
             mMediaPlayer = null;
@@ -82,14 +88,32 @@ public class PlayerHelper {
     {
         if (mMediaPlayer != null)
         {
+            setPlayerPlayState(PlayerConfig.PLAYER_STATE_INIT);
             mMediaPlayer.reset();
         }
     }
 
+    /**
+     *  设置播放器播放状态
+     * @param playerState
+     */
+    public static void setPlayerPlayState(int playerState)
+    {
+        mMediaPlayerState = playerState;
+    }
+
+    /**
+     * 获取播放器当前播放状态
+     * @return
+     */
+    public static int getPlayerPlayState()
+    {
+        return mMediaPlayerState;
+    }
 
 
     /**
-     * 获取当前进度
+     * 获取总长度
      * @return
      */
     public static long getDuration()
@@ -97,6 +121,19 @@ public class PlayerHelper {
         if (mMediaPlayer != null)
         {
             return mMediaPlayer.getDuration();
+        }
+        return 0;
+    }
+
+    /**
+     * 获取当前播放进度
+     * @return
+     */
+    public static long getCurrentDuration()
+    {
+        if (mMediaPlayer != null)
+        {
+            return mMediaPlayer.getCurrentPosition();
         }
         return 0;
     }

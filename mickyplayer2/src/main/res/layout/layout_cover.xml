@@ -10,7 +10,7 @@
         style="@style/Control_Title_Style"
         android:text="人工换头成功，17小时手术成功，术后感染危机重重"
         android:id="@+id/cover_title"/>
-    <android.support.v7.widget.AppCompatImageButton
+    <ImageView
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_gravity="center"

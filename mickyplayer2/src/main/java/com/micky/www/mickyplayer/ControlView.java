@@ -28,8 +28,9 @@ public abstract class ControlView extends FrameLayout{
 
     /**
      * 子类必须实现
-     * @param mickyPlayerListener
      * @return
      */
     protected abstract MickyPlayerListener getPlayListener();
+
+
 }
