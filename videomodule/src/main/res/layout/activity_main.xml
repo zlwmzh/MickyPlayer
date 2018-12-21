@@ -4,11 +4,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent" tools:context="com.micky.www.videomodule.MainActivity">
-
-    <com.micky.www.mickyplayer.MickyPlayerView
+    <com.micky.www.micplayerlibrary.MickyPlayerView
         android:layout_width="match_parent"
         android:layout_height="200dp"
-        android:id="@+id/mickyplayerview"
-       ></com.micky.www.mickyplayer.MickyPlayerView>
+        android:id="@+id/mickyplayerview"></com.micky.www.micplayerlibrary.MickyPlayerView>
 
 </LinearLayout>

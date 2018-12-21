@@ -1,1 +1,1 @@
-include ':mickyplayer2', ':videomodule'
+include ':mickyplayer2', ':videomodule', ':micplayerlibrary'
