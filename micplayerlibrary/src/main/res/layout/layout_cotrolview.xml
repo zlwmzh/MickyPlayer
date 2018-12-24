@@ -6,6 +6,7 @@
  <TextView
      style="@style/Control_Title_Style"
      android:id="@+id/controlview_title"
+     android:text="金牌面试官"
      />
     <ImageView
         android:layout_width="40dp"

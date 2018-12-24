@@ -1,13 +1,17 @@
 package com.micky.www.micplayerlibrary;
 
 import android.content.Context;
+import android.graphics.SurfaceTexture;
 import android.support.annotation.AttrRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Gravity;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.TextureView;
 import android.widget.FrameLayout;
 
 /**
@@ -21,7 +25,9 @@ public class MickyV extends FrameLayout{
     // 上下文环境
     protected Context context;
     // 视频渲染SurfaceVie
-    protected SurfaceView mSurfaceView;
+    protected TextureView mTextureView;
+    // 当前SurfaceTexture
+    protected  SurfaceTexture surfaceTexture;
     // 视图创建成功后的回调
     protected MickyVlListener mListener;
 
@@ -44,6 +50,7 @@ public class MickyV extends FrameLayout{
      */
     protected void init(Context context)
     {
+        Log.d(TAG,"init");
         this.context = context;
     }
 
@@ -53,41 +60,55 @@ public class MickyV extends FrameLayout{
      */
     protected void createSurfaceView()
     {
-        // mSurfaceView 不为空 且已经被添加
-        if (mSurfaceView != null && mSurfaceView.getParent() != null) return;
-        // 实例化SurfaceView，并添加到容器中
-        mSurfaceView = new SurfaceView(context);
-        // 关联SurfaceView回掉
-        mSurfaceView.getHolder().addCallback(ICallBack);
+        // mTextureView 不为空 且已经被添加
+        if (mTextureView != null && mTextureView.getParent() != null) return;
+        // 实例化mTextureView，并添加到容器中
+        mTextureView = new TextureView(context);
+        // 关联mTextureView回掉
+        mTextureView.setSurfaceTextureListener(IListener);
         // 设置宽高,居中显示
         LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT
                 , LayoutParams.MATCH_PARENT, Gravity.CENTER);
-        mSurfaceView.setLayoutParams(params);
-        addView(mSurfaceView);
+        mTextureView.setLayoutParams(params);
+        addView(mTextureView);
     }
 
-    SurfaceHolder.Callback2 ICallBack = new SurfaceHolder.Callback2() {
+
+    TextureView.SurfaceTextureListener IListener = new TextureView.SurfaceTextureListener() {
         @Override
-        public void surfaceRedrawNeeded(SurfaceHolder surfaceHolder) {
+        public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+            Log.d(TAG,"onSurfaceTextureAvailable");
+            if (MickyMediaPlayer.getInstance() != null)
+            {
+                if (mTextureView.getSurfaceTexture() == surfaceTexture || surfaceTexture == null) return;
+                mTextureView.setSurfaceTexture(surfaceTexture);
+            }else
+            {
+                // 创建成功后开始播放视频
+                if (mListener != null) mListener.onSurfaceTextureAvailable(surface);
+            }
 
         }
 
         @Override
-        public void surfaceCreated(SurfaceHolder surfaceHolder) {
-            // 创建成功后开始播放视频
-            if (mListener != null) mListener.onSurfaceCreated();
+        public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+            Log.d(TAG,"onSurfaceTextureSizeChanged");
         }
 
         @Override
-        public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
-
+        public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+            Log.d(TAG,"onSurfaceTextureDestroyed");
+            // 销毁的时候手动接管生命周期，保存之前的surfaceTexture
+            surfaceTexture = surface;
+            return false;
         }
 
         @Override
-        public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
-
+        public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+            Log.d(TAG,"onSurfaceTextureUpdated");
         }
     };
+
 
     /**
      *  设置回调监听
@@ -104,8 +125,17 @@ public class MickyV extends FrameLayout{
      * 获取视频画布
      * @return
      */
-   public SurfaceView getSurfaceView()
+   public TextureView getSurfaceView()
    {
-       return mSurfaceView;
+       return mTextureView;
+   }
+
+    /**
+     * 获取Surface画布
+     * @return
+     */
+   public Surface getSurface()
+   {
+       return new Surface(mTextureView.getSurfaceTexture());
    }
 }
