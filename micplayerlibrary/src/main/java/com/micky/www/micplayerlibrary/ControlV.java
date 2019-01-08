@@ -135,6 +135,7 @@ public class ControlV extends MickyPlayerGestureFrameLayout implements IjkMediaP
         mControlTotalTime = mControlFrame.findViewById(R.id.play_total_time);
         mControlBtnFullorSmall = mControlFrame.findViewById(R.id.control_full_small);
 
+        mControlBtnPlayOrPause.setSelected(true);
         // 对各触发事件进行监听
         mCoverBtnPlay.setOnClickListener(this);
         mControlBtnPlayOrPause.setOnClickListener(this);
@@ -158,12 +159,12 @@ public class ControlV extends MickyPlayerGestureFrameLayout implements IjkMediaP
             return;
         }
         if (state == MicPlayerConfig.PLAYER_STATE_PLAYING ||
-                state == MicPlayerConfig.PLAYER_STATE_PAUSE)
+                state == MicPlayerConfig.PLAYER_STATE_PAUSE || state == MicPlayerConfig.PLAYER_STATE_COMPLETE)
         {
             addControlView();
         }else
         {
-            addCoverView();
+           //  addCoverView();
         }
         // 如果播放状态的话，需要延迟相关时间，移除控制层
         controlVRemoveDelay();
@@ -268,9 +269,7 @@ public class ControlV extends MickyPlayerGestureFrameLayout implements IjkMediaP
         if (MickyMediaPlayer.getInstance() != null)
         {
             // 重置之前设置的参数
-            MickyMediaPlayer.getInstance().stop();
-            MickyMediaPlayer.getInstance().setDisplay(null);
-            MickyMediaPlayer.getInstance().release();
+            releaseView();
         }
         IjkMediaPlayer ijkMediaPlayer = new IjkMediaPlayer();
         ijkMediaPlayer.native_setLogLevel(IjkMediaPlayer.IJK_LOG_DEBUG);
@@ -313,6 +312,7 @@ public class ControlV extends MickyPlayerGestureFrameLayout implements IjkMediaP
             // 控制层播放暂停按钮
             mControlBtnPlayOrPause.setSelected(!mControlBtnPlayOrPause.isSelected());
             if (mListener != null) mListener.firstPlay();
+            start();
            // MickyMediaPlayer.setPlayerPlayState(MicPlayerConfig.PLAYER_STATE_PLAYING);
             // changeShowView();
           //  progressListener();
@@ -370,8 +370,23 @@ public class ControlV extends MickyPlayerGestureFrameLayout implements IjkMediaP
      */
     protected void resetView()
     {
-        mControlBtnPlayOrPause.setSelected(false);
+        mControlBtnPlayOrPause.setSelected(true);
         changeShowView();
+    }
+
+    /**
+     * 释放播放器
+     */
+    protected void releaseView()
+    {
+        if (MickyMediaPlayer.getInstance() != null)
+        {
+            // 重置之前设置的参数
+            MickyMediaPlayer.stop();
+            MickyMediaPlayer.getInstance().setDisplay(null);
+            MickyMediaPlayer.release();
+            resetView();
+        }
     }
 
     /**
@@ -514,6 +529,17 @@ public class ControlV extends MickyPlayerGestureFrameLayout implements IjkMediaP
         mCoverTotalTime.setText(time);
         mControlPlayTime.setText(MediaTimeUtils.stringForTime((int) MickyMediaPlayer.getCurrentDuration()));
         mControlTotalTime.setText(time);
+        return this;
+    }
+
+    /**
+     * 设置当前播放器的状态
+     * @param state
+     * @return
+     */
+    protected ControlV setPlayScreenState(int state)
+    {
+        mPlayScreenState = state;
         return this;
     }
 

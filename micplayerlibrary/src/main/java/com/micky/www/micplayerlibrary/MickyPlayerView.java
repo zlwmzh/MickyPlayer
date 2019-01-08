@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.ViewGroup;
@@ -91,7 +92,7 @@ public class MickyPlayerView extends FrameLayout implements MickyVlListener,Cont
     public MickyPlayerView setVideoPath(String url)
     {
         this.mVideoPath = url;
-       /* // 判断SurfaceVie
+        // 判断SurfaceVie
         if (mickyV.getSurfaceView() == null)
         {
             // 创建
@@ -100,7 +101,7 @@ public class MickyPlayerView extends FrameLayout implements MickyVlListener,Cont
         }else
         {
              prepareMediaPlayer();
-        }*/
+        }
         return this;
     }
 
@@ -153,11 +154,26 @@ public class MickyPlayerView extends FrameLayout implements MickyVlListener,Cont
     }
 
     /**
+     * 释放播放器
+     * @return
+     */
+    public MickyPlayerView releasePlayer()
+    {
+        ViewGroup viewGroup = (ViewGroup) getParent();
+        // 移除播放器
+        if (viewGroup != null) viewGroup.removeView(this);
+        mControlV.releaseView();
+        mickyV.releaseView();
+        return this;
+    }
+
+    /**
      * 创建mediaplayer 并开始准备
      */
     protected void prepareMediaPlayer()
     {
         // 准备播放
+      //  if (mickyV.getSurfaceView().getSurfaceTexture() == null) return;
         mControlV.createPlayer(mVideoPath,mickyV.getSurface());
        // MickyMediaPlayer.getInstance().setDisplay(mickyV.getSurfaceView().getHolder());
     }
@@ -176,15 +192,7 @@ public class MickyPlayerView extends FrameLayout implements MickyVlListener,Cont
 
     @Override
     public void firstPlay() {
-        // 判断SurfaceVie
-        if (mickyV.getSurfaceView() == null)
-        {
-            // 创建
-            mickyV.createSurfaceView();
-        }else
-        {
-            prepareMediaPlayer();
-        }
+
     }
 
     @Override
@@ -208,7 +216,6 @@ public class MickyPlayerView extends FrameLayout implements MickyVlListener,Cont
             case MicPlayerConfig.FULL_SCREEN:
                 changeToFull();
                 break;
-
         }
     }
 
@@ -232,8 +239,12 @@ public class MickyPlayerView extends FrameLayout implements MickyVlListener,Cont
         contentView.addView(mControlV,params);
     }
 
+    /**
+     * 退出全屏
+     */
     protected void changeToSmall()
     {
+
        MickyUtils.showActionBar(context);
        MickyUtils.scanForActivity(context)
                 .setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -249,5 +260,39 @@ public class MickyPlayerView extends FrameLayout implements MickyVlListener,Cont
         addView(mControlV,params);
     }
 
+    /**
+     * 进入小窗
+     */
+    public void enterTinyWindow()
+    {
+        if (mControlV.getScreenState() == MicPlayerConfig.PLAYER_TINY_WINDOW_SCREEN) return;
+        mControlV.setPlayScreenState(MicPlayerConfig.PLAYER_TINY_WINDOW_SCREEN);
+        removeAllViews();
+        ViewGroup contentView = (ViewGroup)  MickyUtils.scanForActivity(context)
+                .findViewById(android.R.id.content);
+        // 小窗口的宽度为屏幕宽度的60%，长宽比默认为16:9，右边距、下边距为8dp。
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                (int) (MickyUtils.getScreenWidth(context) * 0.6f),
+                (int) (MickyUtils.getScreenWidth(context) * 0.6f * 9f / 16f));
+        params.gravity = Gravity.BOTTOM | Gravity.END;
+        params.rightMargin = MickyUtils.dp2px(context, 8f);
+        params.bottomMargin = MickyUtils.dp2px(context, 8f);
+        contentView.addView(mickyV, params);
+       // contentView.addView(mControlV,params);
+    }
+
+    public void exitTinyWindow() {
+        if (mControlV.getScreenState() != MicPlayerConfig.PLAYER_TINY_WINDOW_SCREEN) return;
+         mControlV.setPlayScreenState(MicPlayerConfig.HORIZONTAL_SCREEN);
+            ViewGroup contentView = (ViewGroup) MickyUtils.scanForActivity(context)
+                    .findViewById(android.R.id.content);
+        contentView.removeView(mickyV);
+       // contentView.removeView(mControlV);
+            LayoutParams params = new LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT);
+        addView(mickyV, params);
+        addView(mControlV,params);
+    }
 
 }

@@ -32,4 +32,5 @@ public class MicPlayerConfig {
 
     public static final int HORIZONTAL_SCREEN = 0x00;
     public static final int FULL_SCREEN = 0x01;
+    public static final int PLAYER_TINY_WINDOW_SCREEN = 0X02;   // 小窗口播放器
 }

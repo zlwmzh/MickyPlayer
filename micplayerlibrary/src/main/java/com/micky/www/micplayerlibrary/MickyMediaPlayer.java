@@ -13,7 +13,7 @@ import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
 public class MickyMediaPlayer {
     // 上下文环境
-    protected static Context mContext;
+    protected static Context context;
     // ijkplayer提供，用于播放视频，需要给他传入一个surfaceView显示
     protected static IMediaPlayer mMediaPlayer = null;
     // 当前播放状态,默认初始状态
@@ -22,7 +22,7 @@ public class MickyMediaPlayer {
     public static void init(Context context)
     {
         // 上下文环境
-        mContext = context;
+        context = context;
         // Frescon初始化操作
         Fresco.initialize(context);
     }

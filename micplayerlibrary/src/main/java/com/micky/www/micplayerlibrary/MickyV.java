@@ -131,11 +131,29 @@ public class MickyV extends FrameLayout{
    }
 
     /**
+     * 释放view
+     */
+   public void  releaseView()
+   {
+       removeView(mTextureView);
+       mTextureView = null;
+       surfaceTexture = null;
+   }
+
+    /**
      * 获取Surface画布
      * @return
      */
    public Surface getSurface()
    {
-       return new Surface(mTextureView.getSurfaceTexture());
+       if (mTextureView.getSurfaceTexture() != null)
+       {
+           return new Surface(mTextureView.getSurfaceTexture());
+       }
+       if (surfaceTexture != null)
+       {
+           return new Surface(surfaceTexture);
+       }
+       return null;
    }
 }
