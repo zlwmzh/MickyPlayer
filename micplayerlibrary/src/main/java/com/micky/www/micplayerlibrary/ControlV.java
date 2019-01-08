@@ -312,7 +312,10 @@ public class ControlV extends MickyPlayerGestureFrameLayout implements IjkMediaP
             // 信息层点击播放
             // 控制层播放暂停按钮
             mControlBtnPlayOrPause.setSelected(!mControlBtnPlayOrPause.isSelected());
-            start();
+            if (mListener != null) mListener.firstPlay();
+           // MickyMediaPlayer.setPlayerPlayState(MicPlayerConfig.PLAYER_STATE_PLAYING);
+            // changeShowView();
+          //  progressListener();
             return;
         }
         if (id == R.id.btn_control)
@@ -573,6 +576,7 @@ public class ControlV extends MickyPlayerGestureFrameLayout implements IjkMediaP
         Log.d(TAG,"onPrepared");
         isPrepare = true;
         initTimeInfo();
+        start();
     }
 
     @Override

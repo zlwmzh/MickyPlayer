@@ -15,6 +15,6 @@
         android:layout_height="200dp"
         android:layout_marginTop="10dp"
         android:id="@+id/surfaceview"
-        android:visibility="gone"/>
+        />
 
 </LinearLayout>

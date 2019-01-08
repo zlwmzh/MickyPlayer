@@ -8,6 +8,7 @@ package com.micky.www.micplayerlibrary;
  * @Version 1.0
  */
 public interface ControlVListener {
+    void firstPlay();
     void fullOrSmallScreen(int screenState);
     void videoSize(int width,int height);
 }

@@ -91,7 +91,7 @@ public class MickyPlayerView extends FrameLayout implements MickyVlListener,Cont
     public MickyPlayerView setVideoPath(String url)
     {
         this.mVideoPath = url;
-        // 判断SurfaceVie
+       /* // 判断SurfaceVie
         if (mickyV.getSurfaceView() == null)
         {
             // 创建
@@ -100,7 +100,7 @@ public class MickyPlayerView extends FrameLayout implements MickyVlListener,Cont
         }else
         {
              prepareMediaPlayer();
-        }
+        }*/
         return this;
     }
 
@@ -172,6 +172,19 @@ public class MickyPlayerView extends FrameLayout implements MickyVlListener,Cont
     @Override
     public void fullOrSmallScreen(int screenState) {
       changeView(screenState);
+    }
+
+    @Override
+    public void firstPlay() {
+        // 判断SurfaceVie
+        if (mickyV.getSurfaceView() == null)
+        {
+            // 创建
+            mickyV.createSurfaceView();
+        }else
+        {
+            prepareMediaPlayer();
+        }
     }
 
     @Override
