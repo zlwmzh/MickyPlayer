@@ -197,9 +197,34 @@ public class MickyPlayerView extends FrameLayout implements MickyVlListener,Cont
 
     @Override
     public void videoSize(int width, int height) {
-     //  LayoutParams params = (LayoutParams) mickyV.getSurfaceView().getLayoutParams();
-     //  params.height = params.width * (height / width);
-     //  mickyV.getSurfaceView().setLayoutParams(params);
+       mickyV.getSurfaceView().setVideoSize(width,height);
+    }
+
+    @Override
+    public void complete() {
+        // 处理播放完成的情况
+        int sceenState = mControlV.getScreenState();
+        switch (sceenState)
+        {
+            case MicPlayerConfig.HORIZONTAL_SCREEN:
+                releasePlayer();
+                break;
+            case MicPlayerConfig.FULL_SCREEN:
+
+                break;
+            case MicPlayerConfig.PLAYER_TINY_WINDOW_SCREEN_TO_FULL_SCREEN:
+
+                break;
+            case MicPlayerConfig.PLAYER_TINY_WINDOW_SCREEN:
+                removeParent();
+                releasePlayer();
+                break;
+        }
+    }
+
+    @Override
+    public void error() {
+
     }
 
     /**
@@ -214,7 +239,11 @@ public class MickyPlayerView extends FrameLayout implements MickyVlListener,Cont
                 changeToSmall();
                 break;
             case MicPlayerConfig.FULL_SCREEN:
-                changeToFull();
+            case MicPlayerConfig.PLAYER_TINY_WINDOW_SCREEN_TO_FULL_SCREEN:
+                changeToFull(screenState);
+                break;
+            case MicPlayerConfig.PLAYER_TINY_WINDOW_SCREEN:
+                enterTinyWindow();
                 break;
         }
     }
@@ -223,13 +252,16 @@ public class MickyPlayerView extends FrameLayout implements MickyVlListener,Cont
     /**
      * 切换到全屏状态
      */
-    protected void changeToFull()
+    protected void changeToFull(int state)
     {
+        // 显示部分control层view
+        mControlV.showSomeControlView();
        // 隐藏ActionBar、状态栏、并横屏
         MickyUtils.hideActionBar(context);
         MickyUtils.scanForActivity(context)
-                .setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);;
+                .setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         removeAllViews();
+        removeParent();
         ViewGroup contentView = (ViewGroup) MickyUtils.scanForActivity(context)
                 .findViewById(android.R.id.content);
         LayoutParams params = new LayoutParams(
@@ -237,6 +269,7 @@ public class MickyPlayerView extends FrameLayout implements MickyVlListener,Cont
                 ViewGroup.LayoutParams.MATCH_PARENT);
         contentView.addView(mickyV, params);
         contentView.addView(mControlV,params);
+        mControlV.setPlayScreenState(state);
     }
 
     /**
@@ -244,20 +277,18 @@ public class MickyPlayerView extends FrameLayout implements MickyVlListener,Cont
      */
     protected void changeToSmall()
     {
-
+       // 显示部分control层view
+       mControlV.showSomeControlView();
        MickyUtils.showActionBar(context);
        MickyUtils.scanForActivity(context)
                 .setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
-        ViewGroup contentView = (ViewGroup) MickyUtils.scanForActivity(context)
-                .findViewById(android.R.id.content);
-        contentView.removeView(mickyV);
-        contentView.removeView(mControlV);
+        removeParent();
         LayoutParams params = new LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT);
         addView(mickyV, params);
         addView(mControlV,params);
+        mControlV.setPlayScreenState(MicPlayerConfig.HORIZONTAL_SCREEN);
     }
 
     /**
@@ -265,29 +296,52 @@ public class MickyPlayerView extends FrameLayout implements MickyVlListener,Cont
      */
     public void enterTinyWindow()
     {
+        // 判断当前播放状态，如果是正在播放和暂停播放才进入小窗
+        if (MickyMediaPlayer.getPlayerPlayState() != MicPlayerConfig.PLAYER_STATE_PLAYING &&
+                MickyMediaPlayer.getPlayerPlayState() != MicPlayerConfig.PLAYER_STATE_PAUSE &&
+                MickyMediaPlayer.getPlayerPlayState() != MicPlayerConfig.PLAYER_STATE_BUFFER) return;
         if (mControlV.getScreenState() == MicPlayerConfig.PLAYER_TINY_WINDOW_SCREEN) return;
+        // 隐藏部分control层view
+        mControlV.hideSomeControlView();
+        // 小窗口的宽度为屏幕宽度的60%，长宽比默认为16:9，右边距、下边距为8dp。
+        FrameLayout.LayoutParams params;
+        // 如果是全屏状态切换到小屏幕，首先切换到正常状态，然后再切换到小屏幕
+        if (mControlV.getScreenState() == MicPlayerConfig.PLAYER_TINY_WINDOW_SCREEN_TO_FULL_SCREEN)
+        {
+            MickyUtils.showActionBar(context);
+            MickyUtils.scanForActivity(context)
+                    .setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            params = new FrameLayout.LayoutParams(
+                    (int) (MickyUtils.getScreenHeight(context) * 0.6f),
+                    (int) (MickyUtils.getScreenHeight(context) * 0.6f * 9f / 16f));
+        }else
+        {
+            params = new FrameLayout.LayoutParams(
+                    (int) (MickyUtils.getScreenWidth(context) * 0.6f),
+                    (int) (MickyUtils.getScreenWidth(context) * 0.6f * 9f / 16f));
+        }
         mControlV.setPlayScreenState(MicPlayerConfig.PLAYER_TINY_WINDOW_SCREEN);
         removeAllViews();
+        removeParent();
         ViewGroup contentView = (ViewGroup)  MickyUtils.scanForActivity(context)
                 .findViewById(android.R.id.content);
-        // 小窗口的宽度为屏幕宽度的60%，长宽比默认为16:9，右边距、下边距为8dp。
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                (int) (MickyUtils.getScreenWidth(context) * 0.6f),
-                (int) (MickyUtils.getScreenWidth(context) * 0.6f * 9f / 16f));
+
         params.gravity = Gravity.BOTTOM | Gravity.END;
         params.rightMargin = MickyUtils.dp2px(context, 8f);
         params.bottomMargin = MickyUtils.dp2px(context, 8f);
         contentView.addView(mickyV, params);
-       // contentView.addView(mControlV,params);
+        contentView.addView(mControlV,params);
+        mControlV.setPlayScreenState(MicPlayerConfig.PLAYER_TINY_WINDOW_SCREEN);
     }
 
     public void exitTinyWindow() {
         if (mControlV.getScreenState() != MicPlayerConfig.PLAYER_TINY_WINDOW_SCREEN) return;
+        // 显示部分control层view
+        mControlV.showSomeControlView();
          mControlV.setPlayScreenState(MicPlayerConfig.HORIZONTAL_SCREEN);
             ViewGroup contentView = (ViewGroup) MickyUtils.scanForActivity(context)
                     .findViewById(android.R.id.content);
-        contentView.removeView(mickyV);
-       // contentView.removeView(mControlV);
+       removeParent();
             LayoutParams params = new LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT);
@@ -295,4 +349,11 @@ public class MickyPlayerView extends FrameLayout implements MickyVlListener,Cont
         addView(mControlV,params);
     }
 
+    protected void removeParent()
+    {
+        ViewGroup v = (ViewGroup) mickyV.getParent();
+        ViewGroup v2 = (ViewGroup) mControlV.getParent();
+        if (v != null) v.removeView(mickyV);
+        if (v2 != null) v2.removeView(mControlV);
+    }
 }

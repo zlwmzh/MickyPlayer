@@ -5,16 +5,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" tools:context="com.micky.www.videomodule.MainActivity">
-    <com.micky.www.micplayerlibrary.MickyPlayerView
+    android:layout_height="match_parent"
+    android:paddingLeft="20dp"
+    android:paddingRight="20dp"
+    android:paddingTop="20dp">
+    <Button
         android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:id="@+id/mickyplayerview"></com.micky.www.micplayerlibrary.MickyPlayerView>
-    <SurfaceView
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_vl"
+        android:text="视频列表一"/>
+    <Button
         android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:layout_marginTop="10dp"
-        android:id="@+id/surfaceview"
-        />
-
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_v2"
+        android:text="视频列表二"
+        android:layout_marginTop="20dp"/>
 </LinearLayout>

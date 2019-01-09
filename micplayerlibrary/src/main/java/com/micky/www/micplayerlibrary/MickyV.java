@@ -25,7 +25,7 @@ public class MickyV extends FrameLayout{
     // 上下文环境
     protected Context context;
     // 视频渲染SurfaceVie
-    protected TextureView mTextureView;
+    protected MickyTextureView mTextureView;
     // 当前SurfaceTexture
     protected  SurfaceTexture surfaceTexture;
     // 视图创建成功后的回调
@@ -50,6 +50,7 @@ public class MickyV extends FrameLayout{
      */
     protected void init(Context context)
     {
+        setBackgroundColor(getResources().getColor(android.R.color.black));
         Log.d(TAG,"init");
         this.context = context;
     }
@@ -63,7 +64,7 @@ public class MickyV extends FrameLayout{
         // mTextureView 不为空 且已经被添加
         if (mTextureView != null && mTextureView.getParent() != null) return;
         // 实例化mTextureView，并添加到容器中
-        mTextureView = new TextureView(context);
+        mTextureView = new MickyTextureView(context);
         // 关联mTextureView回掉
         mTextureView.setSurfaceTextureListener(IListener);
         // 设置宽高,居中显示
@@ -125,7 +126,7 @@ public class MickyV extends FrameLayout{
      * 获取视频画布
      * @return
      */
-   public TextureView getSurfaceView()
+   public MickyTextureView getSurfaceView()
    {
        return mTextureView;
    }

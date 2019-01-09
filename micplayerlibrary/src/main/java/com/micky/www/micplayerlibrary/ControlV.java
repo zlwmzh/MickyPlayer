@@ -265,6 +265,7 @@ public class ControlV extends MickyPlayerGestureFrameLayout implements IjkMediaP
      */
     protected void createPlayer(String url, Surface surface)
     {
+        addLoadingView();
         this.url = url;
         if (MickyMediaPlayer.getInstance() != null)
         {
@@ -335,9 +336,14 @@ public class ControlV extends MickyPlayerGestureFrameLayout implements IjkMediaP
         }
         if (id == R.id.control_full_small)
         {
-            // 全屏或者缩放
             mControlBtnFullorSmall.setSelected(!mControlBtnFullorSmall.isSelected());
-            if (mListener != null) mListener.fullOrSmallScreen((mPlayScreenState = (mPlayScreenState == MicPlayerConfig.HORIZONTAL_SCREEN ? MicPlayerConfig.FULL_SCREEN : MicPlayerConfig.HORIZONTAL_SCREEN)));
+            // 全屏或者缩放
+            if (mPlayScreenState == MicPlayerConfig.PLAYER_TINY_WINDOW_SCREEN  || mPlayScreenState == MicPlayerConfig.PLAYER_TINY_WINDOW_SCREEN_TO_FULL_SCREEN)
+            {
+                if (mListener != null) mListener.fullOrSmallScreen((mPlayScreenState == MicPlayerConfig.PLAYER_TINY_WINDOW_SCREEN ? MicPlayerConfig.PLAYER_TINY_WINDOW_SCREEN_TO_FULL_SCREEN :MicPlayerConfig.PLAYER_TINY_WINDOW_SCREEN ));
+                return;
+            }
+            if (mListener != null) mListener.fullOrSmallScreen((mPlayScreenState == MicPlayerConfig.HORIZONTAL_SCREEN ? MicPlayerConfig.FULL_SCREEN : MicPlayerConfig.HORIZONTAL_SCREEN));
             return;
         }
     }
@@ -371,7 +377,33 @@ public class ControlV extends MickyPlayerGestureFrameLayout implements IjkMediaP
     protected void resetView()
     {
         mControlBtnPlayOrPause.setSelected(true);
+        mControlSeekBar.setProgress(0);
+        mControlPlayTime.setText("00:00");
+        showSomeControlView();
         changeShowView();
+    }
+
+    /**
+     * 隐藏部分control层的view
+     * 方便进度小窗
+     */
+    protected void hideSomeControlView()
+    {
+        mControlPlayTime.setVisibility(INVISIBLE);
+        mControlSeekBar.setVisibility(INVISIBLE);
+        mControlTotalTime.setVisibility(INVISIBLE);
+        mControlTitle.setVisibility(INVISIBLE);
+    }
+
+    /**
+     * 显示部分control层的view
+     */
+    protected void showSomeControlView()
+    {
+        mControlPlayTime.setVisibility(VISIBLE);
+        mControlSeekBar.setVisibility(VISIBLE);
+        mControlTotalTime.setVisibility(VISIBLE);
+        mControlTitle.setVisibility(VISIBLE);
     }
 
     /**
@@ -616,6 +648,7 @@ public class ControlV extends MickyPlayerGestureFrameLayout implements IjkMediaP
        MickyMediaPlayer.setPlayerPlayState(MicPlayerConfig.PLAYER_STATE_COMPLETE);
        resetView();
        Log.d(TAG,"onCompletion");
+       if (mListener != null) mListener.complete();
     }
 
     @Override
@@ -623,6 +656,7 @@ public class ControlV extends MickyPlayerGestureFrameLayout implements IjkMediaP
         MickyMediaPlayer.setPlayerPlayState(MicPlayerConfig.PLAYER_STATE_ERROR);
         changeShowView();
         Log.d(TAG,"onError");
+        if (mListener != null) mListener.error();
         return false;
     }
 

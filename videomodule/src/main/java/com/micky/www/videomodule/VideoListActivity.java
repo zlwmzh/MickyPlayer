@@ -70,4 +70,9 @@ public class VideoListActivity extends AppCompatActivity {
         mList.add(v3);
         mAdapter.notifyDataSetChanged();
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
 }

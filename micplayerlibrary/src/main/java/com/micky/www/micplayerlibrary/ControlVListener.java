@@ -11,4 +11,6 @@ public interface ControlVListener {
     void firstPlay();
     void fullOrSmallScreen(int screenState);
     void videoSize(int width,int height);
+    void complete();
+    void error();
 }
